@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     type:String,
     required:true
   },
-  gmail: {
+  gmail:{
     type: String,
     required: true,
     unique: true
@@ -15,10 +15,13 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   role:{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'admin',
+    type:[String],
     required: true,
     enum: ['Power User', 'User', 'Support Desk'],
+  },
+  isDeleted:{
+     type:Boolean,
+     default:false
   },
   transactions: [{
     type:mongoose.Schema.Types.ObjectId,

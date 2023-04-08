@@ -6,6 +6,10 @@ const adminSchema = new mongoose.Schema({
     required:true,
     unique:true
   },
+  roll:{
+    type:String,
+    default:"admin"
+  },
   email:{
     type:String,
     required:true,
