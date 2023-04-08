@@ -31,13 +31,13 @@ const createRole = async function(req, res) {
 
     let info = await transporter.sendMail({
       from: 'your-email@gmail.com', // sender address
-      to: gmail, // list of receivers
-      subject: 'One-Time Password', // Subject line
+      to: gmail, // receivers address
+      subject: 'One-Time Password', // purpose
       text: `Your one-time password is ${otp}. This password will expire in 10 minutes.`, // plain text body
       html: `<p>Your one-time password is <strong>${otp}</strong>. This password will expire in 10 minutes.</p>`, // html body
     });
 
-    // Store the OTP in the database for later verification
+
     await userModel.create({ name, gmail, password, role, otp });
 
     res.status(200).send({ status: true, message: `An OTP has been sent to ${gmail}` });
