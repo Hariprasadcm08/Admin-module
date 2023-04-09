@@ -1,25 +1,44 @@
 const userModel=require("../models/userModel")
 const adminModel=require("../models/adminModel")
-const session = require('express-session')
-const speakeasy = require('speakeasy')
-const nodemailer = require('nodemailer')
 
+const nodemailer = require('nodemailer')
+const crypto = require('crypto')
+const {regexvalidName,regexValidNumber,regexValidgmail,passwordRegex}=require("../validation")
 
 const createRole = async function(req, res) {
   try {
     let adminId = req.params.adminId;
     let data = req.body;
-    let { name, gmail, password, role } = data;
+    let {name, gmail, password, role ,phone} = data;
+
 
     let admin = await adminModel.findOne({ adminId: adminId });
     if (!admin) {
       return res.status(400).send({ status: false, message: `Only admins are allowed to create ${data.role}` });
     }
 
+    //=======================================validation ==================================================//
+    if (!name.match(regexvalidName)){
+      return res.status(400).send({ status: false, msg: "please enetr a valid name" });
+      }
+
+    if(!phone.match(regexValidNumber)){
+      return res.status(400).send({ status: false, msg: "please enetr a valid phone number" })
+    }
+
+    if (!gmail.match(regexValidgmail)){
+            return res.status(400).send("Enter Valid Email")
+    }
+
+    if (!password.match(passwordRegex))
+            return res.status(400).send({ status: false, message: "Password Should contain min 1 uppercase , lowercase and one special character" })
+//=======================================================================================================================================================//
   
+
+//=================generating the unique otp of 6 digits=============================================//
     let  otp = crypto.randomInt(100000, 1000000).toString().padStart(6, '0');
      
-    let transporter = nodemailer.createTransport({
+    let transporter=nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 587,
       secure: false,
@@ -31,17 +50,17 @@ const createRole = async function(req, res) {
 
     let info = await transporter.sendMail({
       from: 'your-email@gmail.com', // sender address
-      to: gmail, // list of receivers
-      subject: 'One-Time Password', // Subject line
-      text: `Your one-time password is ${otp}. This password will expire in 10 minutes.`, // plain text body
-      html: `<p>Your one-time password is <strong>${otp}</strong>. This password will expire in 10 minutes.</p>`, // html body
+      to: gmail, //  receivers  address
+      subject: 'One-Time Password', //purpose 
+      text:`Your one time password is ${otp}.This password will expire in 10 minutes.`, 
+      html:`<p>Your one-time password is <strong>${otp}</strong>. This password will expire in 10 minutes.</p>`
     });
 
-    // Store the OTP in the database for later verification
-    await userModel.create({ name, gmail, password, role, otp });
+    // storing the otp in our database for later on verification ===========================================//
+    let userdata=await userModel.create({ name, gmail, password, role, otp });
 
-    res.status(200).send({ status: true, message: `An OTP has been sent to ${gmail}` });
-  } catch (error) {
+    res.status(201).send({ status: true, message: `OTP has been sent to the given id i.e ${gmail} \n ${userdata}` });
+} catch (error) {
     return res.status(500).send({ status: false, message: error.message });
   }
 };
@@ -68,5 +87,7 @@ const getUser=async function(req,res){
     return res.status(500).send({status:false,message:"error.message"})
   }
 }
+
+
 
 module.exports={createRole,getUser}
