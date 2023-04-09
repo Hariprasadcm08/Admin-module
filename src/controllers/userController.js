@@ -17,7 +17,7 @@ const createRole = async function(req, res) {
       return res.status(400).send({ status: false, message: `Only admins are allowed to create ${data.role}` });
     }
 
-    //=======================================validation ==================================================//
+    //=======================================validation for inputs ==================================================//
     if (!name.match(regexvalidName)){
       return res.status(400).send({ status: false, msg: "please enetr a valid name" });
       }
